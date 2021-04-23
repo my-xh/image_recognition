@@ -13,9 +13,10 @@ import os
 import sys
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt, QSize
 from main_window import Ui_MainWindow
+from recognition import RecognizerManager
 
 
 class MyUi(QMainWindow, Ui_MainWindow):
@@ -30,13 +31,17 @@ class MyUi(QMainWindow, Ui_MainWindow):
         self.cb_type.currentIndexChanged.connect(self.select_type)
         self.btn_copy.clicked.connect(self.copy_result)
 
+        self.select_type()  # 选择初始图片类型
+
+        self.recg_mgr = RecognizerManager()  # 创建识别器管理者
+
     def select_image(self):
         """打开文件选择框进行图片选择"""
-        img_name, _ = QFileDialog.getOpenFileName(self, '选择要识别的图片', directory='./image', filter='(*.jpg *.png)')
-        if img_name:
+        self.image_name, _ = QFileDialog.getOpenFileName(self, '选择要识别的图片', directory='./image', filter='(*.jpg *.png)')
+        if self.image_name:
             # 显示图片名
-            self.edit_file.setText(os.path.basename(img_name))
-            pixmap = QPixmap(img_name)
+            self.edit_file.setText(os.path.basename(self.image_name))
+            pixmap = QPixmap(self.image_name)
             # 等比例缩放图片
             scaled_pixmap = pixmap.scaled(QSize(411, 421), Qt.KeepAspectRatio, Qt.SmoothTransformation)
             # 显示图片
@@ -50,8 +55,7 @@ class MyUi(QMainWindow, Ui_MainWindow):
 
     def recognize(self):
         """图像识别"""
-        print('开始识别图像')
-        result = '识别结果：\n'
+        result = self.recg_mgr.recognize(self.image_name, self.image_type)
         self.lb_result.setText(result)
 
     def copy_result(self):
